@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* HSL Color System - Sleek Dark Gold/Amber Palette */
+  --background: 240 10% 4%;
+  --foreground: 0 0% 98%;
+  --primary: 38 92% 50%; /* Golden Amber */
+  --primary-hover: 38 92% 42%;
+  --primary-rgb: 245, 158, 11;
+  --card: 240 10% 6%;
+  --card-hover: 240 10% 9%;
+  --card-border: 240 5% 15%;
+  --card-glass: rgba(18, 18, 22, 0.65);
+  --border: 240 5% 15%;
+  --border-light: 240 5% 25%;
+  --muted: 240 5% 64%;
+  --muted-dark: 240 5% 20%;
+  --success: 142 72% 40%;
+  --error: 0 84% 60%;
+  --warning: 48 96% 50%;
+  --info: 217 91% 60%;
+  
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-gold: 0 0 20px rgba(245, 158, 11, 0.15);
+
+  color-scheme: dark;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: hsl(var(--background));
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.03) 0px, transparent 50%);
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+a {
+  font-weight: 500;
+  color: hsl(var(--primary));
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+a:hover {
+  color: hsl(var(--primary-hover));
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--card-border));
+  border-radius: var(--radius-sm);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--border-light));
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.5)); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Premium Typography Helper */
+.text-gradient {
+  background: linear-gradient(135deg, #ffffff 30%, #eab308 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.react-datepicker-wrapper {
+  width: 100%;
+}
+.dark-calendar {
+  background-color: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--card-border)) !important;
+  color: #fff !important;
+  font-family: inherit !important;
+}
+.dark-calendar .react-datepicker__header {
+  background-color: hsl(var(--card)) !important;
+  border-bottom: 1px solid hsl(var(--card-border)) !important;
+}
+.dark-calendar .react-datepicker__current-month, 
+.dark-calendar .react-datepicker__day-name, 
+.dark-calendar .react-datepicker__time-name {
+  color: #fff !important;
+}
+.dark-calendar .react-datepicker__day {
+  color: #fff !important;
+}
+.dark-calendar .react-datepicker__day:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+.dark-calendar .react-datepicker__day--selected, 
+.dark-calendar .react-datepicker__day--keyboard-selected {
+  background-color: hsl(var(--primary)) !important;
+  color: #000 !important;
+}
+.dark-calendar .react-datepicker__day--disabled {
+  color: hsl(var(--muted)) !important;
+}
