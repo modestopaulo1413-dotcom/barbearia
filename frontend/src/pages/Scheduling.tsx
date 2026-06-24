@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, Scissors, User, ChevronRight, AlertCircle, Sparkles } from 'lucide-react';
+import { Clock, Scissors, User, ChevronRight, AlertCircle, Sparkles } from 'lucide-react';
 import { apiFetch } from '../services/api';
 import type { Barbeiro, Servico } from '../types';
 
@@ -284,7 +284,6 @@ export const Scheduling: React.FC = () => {
       {/* STEP 2: Date & Time */}
       {step === 2 && (
         <div className="card">
-          <h2 className="card-title">
           <h2 className="card-title" style={{ border: 'none', justifyContent: 'center' }}>
             <span style={{ textTransform: 'capitalize', fontSize: '1.5rem', fontWeight: 800 }}>{currentMonthStr}</span>
           </h2>
