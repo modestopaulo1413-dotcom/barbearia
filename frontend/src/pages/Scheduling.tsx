@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Clock, Scissors, User, ChevronRight, AlertCircle, Sparkles } from 'lucide-react';
 import { apiFetch } from '../services/api';
@@ -30,17 +30,6 @@ function generateAllSlots(faixas: string[]): string[] {
   return allSlots;
 }
 
-function getNextDays(days: number): Date[] {
-  const result: Date[] = [];
-  const today = new Date();
-  for (let i = 0; i < days; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    result.push(d);
-  }
-  return result;
-}
-
 export const Scheduling: React.FC = () => {
   const [barbeiros, setBarbeiros] = useState<Barbeiro[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
@@ -54,6 +43,7 @@ export const Scheduling: React.FC = () => {
   });
   const [selectedTime, setSelectedTime] = useState('');
   const [observacoes, setObservacoes] = useState('');
+  const [selectedMonthOffset, setSelectedMonthOffset] = useState(0);
 
   // UI state
   const [slots, setSlots] = useState<string[]>([]);
@@ -172,8 +162,31 @@ export const Scheduling: React.FC = () => {
   // Filter services by barber (only show services configured for the selected barber)
   const filteredServices = servicos.filter(s => s.barbeiro_id === selectedBarberId);
 
-  const daysList = getNextDays(30);
-  const currentMonthStr = new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const today = useMemo(() => new Date(), []);
+  const targetDate = useMemo(() => new Date(today.getFullYear(), today.getMonth() + selectedMonthOffset, 1), [today, selectedMonthOffset]);
+  const isCurrentMonth = selectedMonthOffset === 0;
+
+  const daysList = useMemo(() => {
+    const year = targetDate.getFullYear();
+    const month = targetDate.getMonth();
+    const date = new Date(year, month, 1);
+    const days: Date[] = [];
+    while (date.getMonth() === month) {
+      if (isCurrentMonth) {
+         const checkDate = new Date(date);
+         checkDate.setHours(23, 59, 59, 999);
+         if (checkDate >= today) {
+           days.push(new Date(date));
+         }
+      } else {
+         days.push(new Date(date));
+      }
+      date.setDate(date.getDate() + 1);
+    }
+    return days;
+  }, [targetDate, isCurrentMonth, today]);
+
+  const currentMonthStr = targetDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
   if (loadingBarbers) {
     return (
@@ -228,7 +241,7 @@ export const Scheduling: React.FC = () => {
                 <div className="barber-avatar">
                   {b.nome ? b.nome.substring(0, 2).toUpperCase() : 'B'}
                 </div>
-                <h3 style={{ fontWeight: 700, color: 'hsl(var(--foreground))', fontSize: '1rem' }}>{b.nome || 'Barbeiro'}</h3>
+                <h3 style={{ fontWeight: 700, color: '#fff', fontSize: '1rem' }}>{b.nome || 'Barbeiro'}</h3>
                 <p style={{ color: 'hsl(var(--muted))', fontSize: '0.8rem', marginTop: '0.25rem' }}>
                   {b.especialidades.join(' • ')}
                 </p>
@@ -252,7 +265,7 @@ export const Scheduling: React.FC = () => {
                       onClick={() => setSelectedServiceId(s.id)}
                     >
                       <div>
-                        <h4 style={{ fontWeight: 700, color: 'hsl(var(--foreground))' }}>{s.nome}</h4>
+                        <h4 style={{ fontWeight: 700, color: '#fff' }}>{s.nome}</h4>
                         {s.descricao && <p style={{ color: 'hsl(var(--muted))', fontSize: '0.85rem', marginTop: '0.25rem' }}>{s.descricao}</p>}
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: 'hsl(var(--muted))', fontSize: '0.8rem', marginTop: '0.5rem' }}>
                           <Clock size={12} /> {s.duracao_minutos} min
@@ -284,9 +297,25 @@ export const Scheduling: React.FC = () => {
       {/* STEP 2: Date & Time */}
       {step === 2 && (
         <div className="card">
-          <h2 className="card-title" style={{ border: 'none', justifyContent: 'center' }}>
-            <span style={{ textTransform: 'capitalize', fontSize: '1.5rem', fontWeight: 800 }}>{currentMonthStr}</span>
-          </h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <button 
+              onClick={() => setSelectedMonthOffset(p => p - 1)} 
+              disabled={selectedMonthOffset === 0}
+              className="btn btn-secondary btn-sm"
+            >
+              Anterior
+            </button>
+            <h2 className="card-title" style={{ border: 'none', margin: 0, padding: 0 }}>
+              <span style={{ textTransform: 'capitalize', fontSize: '1.5rem', fontWeight: 800 }}>{currentMonthStr}</span>
+            </h2>
+            <button 
+              onClick={() => setSelectedMonthOffset(p => p + 1)} 
+              disabled={selectedMonthOffset >= 3}
+              className="btn btn-secondary btn-sm"
+            >
+              Próximo
+            </button>
+          </div>
           <div style={{ display: 'flex', overflowX: 'auto', gap: '0.75rem', paddingBottom: '1rem' }} className="horizontal-calendar">
             {daysList.map(d => {
               const yyyy = d.getFullYear();
@@ -295,6 +324,8 @@ export const Scheduling: React.FC = () => {
               const isoDate = `${yyyy}-${mm}-${dd}`;
               const isSelected = selectedDate === isoDate;
               
+              const dayOfWeekStr = diasSemana[d.getDay()];
+              const hasHorariosConfigurados = barber && barber.horario_funcionamento && barber.horario_funcionamento[dayOfWeekStr] && barber.horario_funcionamento[dayOfWeekStr].length > 0;
               const dayName = d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
               const dayNumber = d.getDate();
 
@@ -324,7 +355,7 @@ export const Scheduling: React.FC = () => {
                     width: '24px', 
                     height: '3px', 
                     borderRadius: '2px', 
-                    background: isSelected ? '#fff' : '#10b981', 
+                    background: isSelected ? '#fff' : (hasHorariosConfigurados ? '#10b981' : 'transparent'), 
                     marginTop: '0.25rem' 
                   }}></div>
                 </div>
@@ -393,15 +424,15 @@ export const Scheduling: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'hsl(var(--muted))', fontWeight: 600 }}>Profissional:</span>
-                <span style={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}>{barber?.nome}</span>
+                <span style={{ color: '#fff', fontWeight: 700 }}>{barber?.nome}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'hsl(var(--muted))', fontWeight: 600 }}>Serviço:</span>
-                <span style={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}>{service?.nome}</span>
+                <span style={{ color: '#fff', fontWeight: 700 }}>{service?.nome}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'hsl(var(--muted))', fontWeight: 600 }}>Duração:</span>
-                <span style={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}>{service?.duracao_minutos} minutos</span>
+                <span style={{ color: '#fff', fontWeight: 700 }}>{service?.duracao_minutos} minutos</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'hsl(var(--muted))', fontWeight: 600 }}>Valor:</span>
@@ -409,7 +440,7 @@ export const Scheduling: React.FC = () => {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'hsl(var(--muted))', fontWeight: 600 }}>Data e Hora:</span>
-                <span style={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}>
+                <span style={{ color: '#fff', fontWeight: 700 }}>
                   {new Date(selectedDate + 'T00:00:00').toLocaleDateString('pt-BR')} às {selectedTime}
                 </span>
               </div>

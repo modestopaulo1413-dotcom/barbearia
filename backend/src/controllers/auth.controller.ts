@@ -160,20 +160,22 @@ export async function googleLogin(c: AppContext) {
   const body = await c.req.json<GoogleLoginInput>()
   const db = c.get('db')
   const clientId = c.env.GOOGLE_CLIENT_ID
-  
-  // Aumentar a tolerância de dessincronização do relógio (até 1 hora)
-  // pois no Windows o horário local muitas vezes tem uma diferença grande.
-  ;(OAuth2Client as any).CLOCK_SKEW_SECS_ = 3600;
-  
-  const client = new OAuth2Client(clientId)
 
   try {
-    const ticket = await client.verifyIdToken({
-      idToken: body.token,
-      audience: clientId,
-    })
-    const payload = ticket.getPayload()
+    const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${body.token}`)
     
+    if (!res.ok) {
+       console.error('Google token verification failed:', await res.text())
+       return error(c, ErrorCodes.INVALID_CREDENTIALS, 'Token do Google inválido', 401)
+    }
+
+    const payload = await res.json() as any
+    
+    if (payload.aud !== clientId) {
+       console.error('Audience mismatch:', payload.aud, clientId)
+       return error(c, ErrorCodes.INVALID_CREDENTIALS, 'Token do Google inválido (Client ID)', 401)
+    }
+
     if (!payload || !payload.email) {
       return error(c, ErrorCodes.INVALID_CREDENTIALS, 'Token do Google inválido', 401)
     }

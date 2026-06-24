@@ -33,6 +33,7 @@ export interface Env {
   JWT_REFRESH_SECRET: string
   ALLOWED_ORIGINS: string
   GOOGLE_CLIENT_ID: string
+  HYPERDRIVE: any
 }
 
 /**

@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
 import type { HonoEnv } from './types'
 import { validateEnv } from './config/env'
-import { Client } from 'pg'
-import { drizzle } from 'drizzle-orm/node-postgres'
+import postgres from 'postgres'
+import { drizzle } from 'drizzle-orm/postgres-js'
 import { corsMiddleware } from './middlewares/cors'
 import { securityHeaders } from './middlewares/security'
 import { errorHandler } from './middlewares/errorHandler'
@@ -29,21 +29,20 @@ app.use('*', async (c, next) => {
   // Valida variáveis de ambiente no primeiro request
   validateEnv(c.env)
   
-  const client = new Client({
-    connectionString: c.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false,
-    },
+  // Usando driver 'postgres'
+  // O Hyperdrive lida com o pool de conexões (Supabase) via proxy interno do Cloudflare!
+  const connectionString = c.env.HYPERDRIVE?.connectionString || c.env.DATABASE_URL
+  
+  const client = postgres(connectionString, {
+    max: 1, // Cloudflare Workers = 1 connection per isolate
   })
 
   try {
-    // Conecta ao banco Postgres do Supabase
-    await client.connect()
     const db = drizzle(client)
     c.set('db', db)
     await next()
   } finally {
-    // Garante que a conexão TCP é fechada após a requisição para evitar travamentos
+    // É importante fechar as conexões TCP
     await client.end()
   }
 })

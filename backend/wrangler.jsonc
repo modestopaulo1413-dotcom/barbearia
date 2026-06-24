@@ -4,16 +4,17 @@
   "main": "src/index.ts",
   "compatibility_date": "2024-12-30",
   "compatibility_flags": ["nodejs_compat"],
-  "d1_databases": [
+
+  "hyperdrive": [
     {
-      "binding": "DB",
-      "database_name": "barbearia-db",
-      "database_id": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
-      "migrations_dir": "drizzle"
+      "binding": "HYPERDRIVE",
+      "id": "8ac46cc38d5c49aeb06d00e018d7680f"
     }
   ],
+
   // Variáveis NÃO sensíveis — segredos ficam em .dev.vars (local) ou wrangler secret (produção)
   "vars": {
-    "ALLOWED_ORIGINS": "http://localhost:5173,http://localhost:3000"
+    "ALLOWED_ORIGINS": "http://localhost:5173,http://localhost:3000,https://barbearia-site.pages.dev"
   }
 }
+
