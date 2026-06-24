@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Scissors, User, ChevronRight, AlertCircle, Sparkles } from 'lucide-react';
 import { apiFetch } from '../services/api';
 import type { Barbeiro, Servico } from '../types';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import { ptBR } from 'date-fns/locale';
+
 
 function generateAllSlots(faixas: string[]): string[] {
   const allSlots: string[] = [];
@@ -30,6 +28,17 @@ function generateAllSlots(faixas: string[]): string[] {
     }
   }
   return allSlots;
+}
+
+function getNextDays(days: number): Date[] {
+  const result: Date[] = [];
+  const today = new Date();
+  for (let i = 0; i < days; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    result.push(d);
+  }
+  return result;
 }
 
 export const Scheduling: React.FC = () => {
@@ -163,6 +172,9 @@ export const Scheduling: React.FC = () => {
   // Filter services by barber (only show services configured for the selected barber)
   const filteredServices = servicos.filter(s => s.barbeiro_id === selectedBarberId);
 
+  const daysList = getNextDays(30);
+  const currentMonthStr = new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
   if (loadingBarbers) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
@@ -216,7 +228,7 @@ export const Scheduling: React.FC = () => {
                 <div className="barber-avatar">
                   {b.nome ? b.nome.substring(0, 2).toUpperCase() : 'B'}
                 </div>
-                <h3 style={{ fontWeight: 700, color: '#fff', fontSize: '1rem' }}>{b.nome || 'Barbeiro'}</h3>
+                <h3 style={{ fontWeight: 700, color: 'hsl(var(--foreground))', fontSize: '1rem' }}>{b.nome || 'Barbeiro'}</h3>
                 <p style={{ color: 'hsl(var(--muted))', fontSize: '0.8rem', marginTop: '0.25rem' }}>
                   {b.especialidades.join(' • ')}
                 </p>
@@ -240,7 +252,7 @@ export const Scheduling: React.FC = () => {
                       onClick={() => setSelectedServiceId(s.id)}
                     >
                       <div>
-                        <h4 style={{ fontWeight: 700, color: '#fff' }}>{s.nome}</h4>
+                        <h4 style={{ fontWeight: 700, color: 'hsl(var(--foreground))' }}>{s.nome}</h4>
                         {s.descricao && <p style={{ color: 'hsl(var(--muted))', fontSize: '0.85rem', marginTop: '0.25rem' }}>{s.descricao}</p>}
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: 'hsl(var(--muted))', fontSize: '0.8rem', marginTop: '0.5rem' }}>
                           <Clock size={12} /> {s.duracao_minutos} min
@@ -273,28 +285,52 @@ export const Scheduling: React.FC = () => {
       {step === 2 && (
         <div className="card">
           <h2 className="card-title">
-            <Calendar size={20} style={{ color: 'hsl(var(--primary))' }} /> Selecione a Data
+          <h2 className="card-title" style={{ border: 'none', justifyContent: 'center' }}>
+            <span style={{ textTransform: 'capitalize', fontSize: '1.5rem', fontWeight: 800 }}>{currentMonthStr}</span>
           </h2>
-          <div className="form-group custom-datepicker-wrapper">
-            <DatePicker
-              selected={new Date(selectedDate + 'T12:00:00')}
-              onChange={(date: Date | null) => {
-                if (date) {
-                  const yyyy = date.getFullYear();
-                  const mm = String(date.getMonth() + 1).padStart(2, '0');
-                  const dd = String(date.getDate()).padStart(2, '0');
-                  setSelectedDate(`${yyyy}-${mm}-${dd}`);
-                  setSelectedTime('');
-                }
-              }}
-              minDate={new Date()}
-              locale={ptBR}
-              dateFormat="dd/MM/yyyy"
-              className="form-input"
-              placeholderText="Escolha o dia"
-              wrapperClassName="w-full"
-              calendarClassName="dark-calendar"
-            />
+          <div style={{ display: 'flex', overflowX: 'auto', gap: '0.75rem', paddingBottom: '1rem' }} className="horizontal-calendar">
+            {daysList.map(d => {
+              const yyyy = d.getFullYear();
+              const mm = String(d.getMonth() + 1).padStart(2, '0');
+              const dd = String(d.getDate()).padStart(2, '0');
+              const isoDate = `${yyyy}-${mm}-${dd}`;
+              const isSelected = selectedDate === isoDate;
+              
+              const dayName = d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '');
+              const dayNumber = d.getDate();
+
+              return (
+                <div
+                  key={isoDate}
+                  onClick={() => { setSelectedDate(isoDate); setSelectedTime(''); }}
+                  style={{
+                    minWidth: '70px',
+                    padding: '0.75rem 0.5rem',
+                    borderRadius: '12px',
+                    border: `1px solid ${isSelected ? 'hsl(var(--primary))' : 'hsl(var(--card-border))'}`,
+                    background: isSelected ? 'hsl(var(--primary))' : 'transparent',
+                    color: isSelected ? '#fff' : 'inherit',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    gap: '0.25rem',
+                    transition: 'all 0.2s ease',
+                    boxShadow: isSelected ? '0 4px 10px rgba(0,0,0,0.1)' : 'none'
+                  }}
+                >
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, textTransform: 'capitalize' }}>{dayName}</span>
+                  <span style={{ fontSize: '1.4rem', fontWeight: 800 }}>{dayNumber}</span>
+                  <div style={{ 
+                    width: '24px', 
+                    height: '3px', 
+                    borderRadius: '2px', 
+                    background: isSelected ? '#fff' : '#10b981', 
+                    marginTop: '0.25rem' 
+                  }}></div>
+                </div>
+              );
+            })}
           </div>
 
           <div style={{ marginTop: '2rem' }}>
@@ -358,15 +394,15 @@ export const Scheduling: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'hsl(var(--muted))', fontWeight: 600 }}>Profissional:</span>
-                <span style={{ color: '#fff', fontWeight: 700 }}>{barber?.nome}</span>
+                <span style={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}>{barber?.nome}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'hsl(var(--muted))', fontWeight: 600 }}>Serviço:</span>
-                <span style={{ color: '#fff', fontWeight: 700 }}>{service?.nome}</span>
+                <span style={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}>{service?.nome}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'hsl(var(--muted))', fontWeight: 600 }}>Duração:</span>
-                <span style={{ color: '#fff', fontWeight: 700 }}>{service?.duracao_minutos} minutos</span>
+                <span style={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}>{service?.duracao_minutos} minutos</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'hsl(var(--muted))', fontWeight: 600 }}>Valor:</span>
@@ -374,7 +410,7 @@ export const Scheduling: React.FC = () => {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'hsl(var(--muted))', fontWeight: 600 }}>Data e Hora:</span>
-                <span style={{ color: '#fff', fontWeight: 700 }}>
+                <span style={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}>
                   {new Date(selectedDate + 'T00:00:00').toLocaleDateString('pt-BR')} às {selectedTime}
                 </span>
               </div>

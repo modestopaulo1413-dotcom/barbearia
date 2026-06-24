@@ -39,7 +39,7 @@
   gap: 0.5rem;
   font-weight: 800;
   font-size: 1.3rem;
-  color: #fff;
+  color: hsl(var(--foreground));
   letter-spacing: -0.5px;
 }
 
@@ -62,7 +62,7 @@
 }
 
 .nav-link:hover, .nav-link.active {
-  color: #fff;
+  color: hsl(var(--foreground));
 }
 
 /* Beautiful Forms / Inputs */
@@ -131,7 +131,7 @@
 
 .btn-primary {
   background: hsl(var(--primary));
-  color: #000;
+  color: #fff;
 }
 
 .btn-primary:hover {
@@ -141,8 +141,8 @@
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  background: rgba(0, 0, 0, 0.05);
+  color: hsl(var(--foreground));
   border-color: hsl(var(--card-border));
 }
 
@@ -206,7 +206,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #fff;
+  color: hsl(var(--foreground));
   border-bottom: 1px solid hsl(var(--card-border));
   padding-bottom: 0.75rem;
 }
@@ -328,7 +328,7 @@
 
 .booking-service {
   font-weight: 700;
-  color: #fff;
+  color: hsl(var(--foreground));
 }
 
 .booking-details {
@@ -415,7 +415,7 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.9rem;
-  color: #fff;
+  color: hsl(var(--foreground));
 }
 
 /* Dashboard Header */
