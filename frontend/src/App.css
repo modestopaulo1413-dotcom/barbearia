@@ -12,6 +12,8 @@
   margin: 0 auto;
   padding: 2rem 1rem;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Glassmorphic Navbar */
@@ -70,6 +72,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  flex: 1;
   min-height: 80vh;
 }
 
@@ -482,7 +485,7 @@
   /* Auth Card */
   .auth-page {
     padding: 1rem;
-    min-height: calc(100vh - 150px);
+    min-height: 75vh;
     display: flex;
     align-items: center;
     justify-content: center;
